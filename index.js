@@ -3,29 +3,30 @@ const axios = require('axios');
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-const next2 = (el) => {
-    console.log(el);
+const finalData = (res, data) => {
+    res.json(data);
 }
 
-const next = (el, next2) => {
-    el.sort((a, b) => {
+const sortFunc = (data, res, finalData) => {
+    data.sort((a, b) => {
         return b.count - a.count
     })
-    next2(el);
+    finalData(res, data);
 }
-const solve = (next) => {
+const fetch = (rest, sortFunc) => {
     axios.get('https://api.github.com/users/srajang123/repos')
         .then(res => {
-            let arr = [];
+            let data = [];
             res.data.forEach(e => {
-                console.log('Repository Name: ' + e.name);
-                console.log('Fork Count: ' + e.forks_count + '\n');
-                arr.push({ 'count': e.forks_count, 'name': e.name });
+                data.push({ 'count': e.forks_count, 'name': e.name });
             });
-            next(arr, next2);
-        });
+            sortFunc(data, rest, finalData);
+        })
+        .catch(err => {
+            rest.send('Following error has occured: ' + err.errno)
+        })
 }
 app.get('/', (req, res) => {
-    solve(next);
+    fetch(res, sortFunc);
 });
 app.listen(5000, console.log('Server Running'));
