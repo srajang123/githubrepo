@@ -5,6 +5,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 const finalData = (res, data) => {
     res.json(data);
+    console.log(data.length);
 }
 
 const sortFunc = (data, res, finalData) => {
@@ -13,20 +14,46 @@ const sortFunc = (data, res, finalData) => {
     })
     finalData(res, data);
 }
-const fetch = (rest, sortFunc) => {
-    axios.get('https://api.github.com/users/srajang123/repos')
-        .then(res => {
-            let data = [];
-            res.data.forEach(e => {
-                data.push({ 'count': e.forks_count, 'name': e.name });
-            });
-            sortFunc(data, rest, finalData);
+const fetch = (rest, url, sortFunc) => {
+
+    let data = [];
+    axios.get(url, {
+            headers: {
+                'Authorization': 'Basic c3JhamFuZzEyMzpjMThjMzNjYjU1ZGExNDY2NTJmNTY0OWFmNDI5NDhjMzVlMjVmMDEx'
+            }
+        })
+        .then(myres => {
+            const count = Math.ceil(myres.data.public_repos / 100);
+            for (let page = 1; page <= count; page++) {
+                url = url + '/repos?per_page=100&page=' + page;
+                axios.get(url, {
+                        headers: {
+                            'Authorization': 'Basic c3JhamFuZzEyMzpjMThjMzNjYjU1ZGExNDY2NTJmNTY0OWFmNDI5NDhjMzVlMjVmMDEx'
+                        }
+                    })
+                    .then(res => {
+                        res.data.forEach(e => {
+                            //console.log(e);
+                            data.push({ 'count': e.forks_count, 'name': e.name });
+                        });
+                    })
+                    .catch(err => {
+                        rest.send('Following error has occured: ' + err);
+                        return;
+                    });
+            }
         })
         .catch(err => {
-            rest.send('Following error has occured: ' + err.errno)
+            console.log('Error: ' + err);
         })
+    sortFunc(data, rest, finalData);
 }
 app.get('/', (req, res) => {
-    fetch(res, sortFunc);
+    let url = 'https://api.github.com/users/microsoft/repos';
+    fetch(res, url, sortFunc);
 });
+app.get('/api', (req, res) => {
+    let url = 'https://api.github.com/orgs/microsoft';
+    fetch(res, url, sortFunc);
+})
 app.listen(5000, console.log('Server Running'));
