@@ -10,7 +10,7 @@ const error = (err, res) => {
         status: 0, //Status code 0 means an error has occurred
         message: err.message //Contains the message body of the Error
     }
-    res.send(ret); //Send response back to client.
+    res.json(ret); //Send response back to client.
 };
 
 //Function to return data to client
@@ -68,7 +68,7 @@ const getCommittees = (org, repo) => {
                 //Looping on the array of commits received
                 res.data.forEach(e => {
                         //name is the name of committer
-                        const name = e.commit.author.name;
+                        const name = e.commit.committer.name;
                         //check whether committer is in the arr object
                         if (name in arr) {
                             //if name exists in arr object increment its count of commits by 1
@@ -155,6 +155,15 @@ app.get('/api', (req, res) => {
     //Call function fetch ot fetch the URL
     fetch(res, url, org, n, m, send);
 });
-
+//Handling invalid API access
+app.use((req, res) => {
+    //storing data to be returned in a temporary variable
+    const ret = {
+            status: 0, //Status code 0 means an error has occurred
+            message: 'Invalid API Access Link' //Contains the message of Invalid access link
+        }
+        //Sending response with 404 Error
+    res.status(404).json(ret);
+});
 //Creates and listens to the server
 app.listen(5000, console.log('Server Running on PORT 5000'));
