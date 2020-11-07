@@ -43,9 +43,7 @@ The final format of each objects in Array becomes:
 ## Managing the large data received
 Management of large amount of data is done through two ways:
 * <b>Usage of different functions and callbacks.</b>
-<br/>
 While receiving data from GitHub API, callback is called only when all data has been received. whether all data has been received is checked by counting how many received have been received and what is the total count of repositories. 
 
 * <b>Using Promises</b>
-<br/>
 After receiving all commiter data from API data is returned to the calling function.
