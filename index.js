@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const app = express();
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
@@ -17,6 +18,7 @@ const sendData = (res, data) => {
         status: 1,
         data: data
     });
+
 }
 
 const finalData = async(res, org, data, n, m, sendData) => {
@@ -86,8 +88,7 @@ const send = (url, count, rest, max, org, n, m, sortFunc) => {
                 });
             })
             .catch(err => {
-                error(err, rest);
-                return;
+                return error(err, rest);
             });
     }
 }
