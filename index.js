@@ -3,9 +3,11 @@ const axios = require('axios');
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 const sendData = (res, data) => {
     res.json(data);
 }
+
 const finalData = async(res, org, data, n, m, sendData) => {
     let i = 0;
     for (let ii = 0; ii < n; ii++) {
@@ -24,47 +26,25 @@ const sortFunc = (org, data, res, n, m, finalData) => {
     });
     finalData(res, org, data.slice(0, n), n, m, sendData);
 }
-const returnName = uname => {
-    return new Promise((resolve, reject) => {
-        axios.get('https://api.github.com/users/' + uname, {
-                headers: {
-                    'Authorization': 'Basic c3JhamFuZzEyMzpjMThjMzNjYjU1ZGExNDY2NTJmNTY0OWFmNDI5NDhjMzVlMjVmMDEx'
-                }
-            })
-            .then(res => {
-                console.log(res.data.name);
-                resolve(res.data.name);
-            })
-            .catch(err => {
-                console.log('New error' + err);
-                reject(err);
-            })
-    })
-}
-const getName = async(uname) => {
-    return uname;
-    /*let a = await returnName(uname);
-    return a;*/
-}
+
 const getCommittees = (org, repo, m) => {
 
     return new Promise((resolve, reject) => {
         let arr = {};
         let i = 0;
-        axios.get('https://api.github.com/repos/' + org + '/' + repo + '/contributors', {
+        axios.get('https://api.github.com/repos/' + org + '/' + repo + '/commits', {
                 headers: {
                     'Authorization': 'Basic c3JhamFuZzEyMzpjMThjMzNjYjU1ZGExNDY2NTJmNTY0OWFmNDI5NDhjMzVlMjVmMDEx'
                 }
             })
             .then(res => {
-                let cnt = 0;
                 res.data.forEach(e => {
-                    /*    returnName(e.login)
-                            .then(el => {
-                                arr[el] = e.contributions;
-                                cnt++;
-                            })*/
-                    arr[e.login] = e.contributions;
+                    const name = e.commit.author.name;
+                    i++;
+                    if (name in arr)
+                        arr[name]++;
+                    else
+                        arr[name] = 1;
                 })
                 resolve(arr);
             })
@@ -74,9 +54,8 @@ const getCommittees = (org, repo, m) => {
             })
 
     })
-
-
 }
+
 const send = (url, count, rest, max, org, n, m, sortFunc) => {
     let data = [];
     for (let page = 1; page <= count; page++) {
@@ -101,6 +80,7 @@ const send = (url, count, rest, max, org, n, m, sortFunc) => {
             });
     }
 }
+
 const fetch = (rest, url, org, n, m, send) => {
     axios.get(url, {
             headers: {
@@ -115,13 +95,16 @@ const fetch = (rest, url, org, n, m, send) => {
             console.log('Error: ' + err);
         });
 }
+
 app.get('/', (req, res) => {
     let url = 'https://api.github.com/users/microsoft/repos';
     fetch(res, url, sortFunc);
 });
+
 app.get('/api', (req, res) => {
     const { org, n, m } = req.query;
     const url = 'https://api.github.com/orgs/' + org;
     fetch(res, url, org, n, m, send);
 })
+
 app.listen(5000, console.log('Server Running'));
