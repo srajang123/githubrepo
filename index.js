@@ -96,11 +96,6 @@ const fetch = (rest, url, org, n, m, send) => {
         });
 }
 
-app.get('/', (req, res) => {
-    let url = 'https://api.github.com/users/microsoft/repos';
-    fetch(res, url, sortFunc);
-});
-
 app.get('/api', (req, res) => {
     const { org, n, m } = req.query;
     const url = 'https://api.github.com/orgs/' + org;
