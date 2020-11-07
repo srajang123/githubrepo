@@ -43,9 +43,50 @@ The final format of each objects in Array becomes:
 ## Managing the large data received
 Management of large amount of data is done through two ways:
 * <b>Usage of different functions and callbacks.</b>
-<br/>
 While receiving data from GitHub API, callback is called only when all data has been received. whether all data has been received is checked by counting how many received have been received and what is the total count of repositories. 
 
 * <b>Using Promises</b>
-<br/>
 After receiving all commiter data from API data is returned to the calling function.
+
+## API Data Return Format
+* It returns data in JSON format.
+* The format is:
+<br/>
+<b>In case of error:</b>
+<br/>
+    {
+        <br/>
+        status: 0,
+        <br/>
+        message:ERROR_MESSAFE_CODE
+        <br/>
+    }
+<br/>
+<b>In case of no error:</b>
+    <br/>
+    {
+        <br/>
+        status: 1,
+        <br/>
+        data:FINAL_DATA
+        <br/>
+    }
+
+## Code
+### npm modules used
+* <b>express </b>- To create and manage the server
+* <b>axios - </b>To Send Requests to Github API
+
+## How to Run locally
+### Requirements
+* git client installed on the system
+* Node.js version 12.13.1
+* API testing tool: Browser or Postman or ny other tool.
+### Steps
+* Create a new folder on your system.
+* Migrate to that folder in the terminal.
+* Run `git clone https://github.com/srajang123/githubrepo`. This will clone the repo to your system.
+* Run `npm install`. This will install all the required modules locally on your system.
+* Run `node index` and the server will start.
+* Goto your browser or Postman or any other tool and goto URL: 'http://localhost:5000/api?org={ORGANIZATION_NAME}&n={VALUE_OF_n}&m={VALUE_OF_m}'.
+* You will receive the results.
