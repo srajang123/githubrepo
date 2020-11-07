@@ -6,11 +6,11 @@ app.use(express.json());
 const sendData = (res, data) => {
     res.json(data);
 }
-const finalData = async(res, data, n, m, sendData) => {
+const finalData = async(res, org, data, n, m, sendData) => {
     let i = 0;
     for (let ii = 0; ii < n; ii++) {
         i++;
-        data[ii]["committees"] = Object.entries(await getCommittees(data[ii].name, m)).sort((a, b) => {
+        data[ii]["committees"] = Object.entries(await getCommittees(org, data[ii].name, m)).sort((a, b) => {
             return b[1] - a[1];
         }).slice(0, m);
         if (i == n)
@@ -18,30 +18,53 @@ const finalData = async(res, data, n, m, sendData) => {
     }
 }
 
-const sortFunc = (data, res, n, m, finalData) => {
+const sortFunc = (org, data, res, n, m, finalData) => {
     data.sort((a, b) => {
         return b.count - a.count
-    })
-    finalData(res, data, n, m, sendData);
+    });
+    finalData(res, org, data.slice(0, n), n, m, sendData);
 }
-const getCommittees = (repo, m) => {
-
+const returnName = uname => {
     return new Promise((resolve, reject) => {
-        let arr = {};
-        let i = 0;
-        axios.get('https://api.github.com/repos/microsoft/' + repo + '/commits', {
+        axios.get('https://api.github.com/users/' + uname, {
                 headers: {
                     'Authorization': 'Basic c3JhamFuZzEyMzpjMThjMzNjYjU1ZGExNDY2NTJmNTY0OWFmNDI5NDhjMzVlMjVmMDEx'
                 }
             })
             .then(res => {
+                console.log(res.data.name);
+                resolve(res.data.name);
+            })
+            .catch(err => {
+                console.log('New error' + err);
+                reject(err);
+            })
+    })
+}
+const getName = async(uname) => {
+    return uname;
+    /*let a = await returnName(uname);
+    return a;*/
+}
+const getCommittees = (org, repo, m) => {
+
+    return new Promise((resolve, reject) => {
+        let arr = {};
+        let i = 0;
+        axios.get('https://api.github.com/repos/' + org + '/' + repo + '/contributors', {
+                headers: {
+                    'Authorization': 'Basic c3JhamFuZzEyMzpjMThjMzNjYjU1ZGExNDY2NTJmNTY0OWFmNDI5NDhjMzVlMjVmMDEx'
+                }
+            })
+            .then(res => {
+                let cnt = 0;
                 res.data.forEach(e => {
-                    const name = e.commit.author.name;
-                    i++;
-                    if (name in arr)
-                        arr[name]++;
-                    else
-                        arr[name] = 1;
+                    /*    returnName(e.login)
+                            .then(el => {
+                                arr[el] = e.contributions;
+                                cnt++;
+                            })*/
+                    arr[e.login] = e.contributions;
                 })
                 resolve(arr);
             })
@@ -54,9 +77,9 @@ const getCommittees = (repo, m) => {
 
 
 }
-const send = (url, count, rest, max, n, m, sortFunc) => {
+const send = (url, count, rest, max, org, n, m, sortFunc) => {
     let data = [];
-    for (let page = 1; page <= 1; page++) {
+    for (let page = 1; page <= count; page++) {
         url = url + '/repos?per_page=100&page=' + page;
         axios.get(url, {
                 headers: {
@@ -66,8 +89,8 @@ const send = (url, count, rest, max, n, m, sortFunc) => {
             .then(res => {
                 res.data.forEach(e => {
                     data.push({ 'count': e.forks_count, 'name': e.name });
-                    if (data.length === 100) {
-                        sortFunc(data, rest, Math.min(n, data.length), m, finalData);
+                    if (data.length === max) {
+                        sortFunc(org, data, rest, Math.min(n, data.length), m, finalData);
                         return;
                     }
                 });
@@ -78,7 +101,7 @@ const send = (url, count, rest, max, n, m, sortFunc) => {
             });
     }
 }
-const fetch = (rest, url, n, m, send) => {
+const fetch = (rest, url, org, n, m, send) => {
     axios.get(url, {
             headers: {
                 'Authorization': 'Basic c3JhamFuZzEyMzpjMThjMzNjYjU1ZGExNDY2NTJmNTY0OWFmNDI5NDhjMzVlMjVmMDEx'
@@ -86,7 +109,7 @@ const fetch = (rest, url, n, m, send) => {
         })
         .then(myres => {
             const count = Math.ceil(myres.data.public_repos / 100);
-            send(url, count, rest, myres.data.public_repos, n, m, sortFunc);
+            send(url, count, rest, myres.data.public_repos, org, n, m, sortFunc);
         })
         .catch(err => {
             console.log('Error: ' + err);
@@ -99,6 +122,6 @@ app.get('/', (req, res) => {
 app.get('/api', (req, res) => {
     const { org, n, m } = req.query;
     const url = 'https://api.github.com/orgs/' + org;
-    fetch(res, url, n, m, send);
+    fetch(res, url, org, n, m, send);
 })
 app.listen(5000, console.log('Server Running'));
