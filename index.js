@@ -68,7 +68,7 @@ const getCommittees = (org, repo) => {
                 //Looping on the array of commits received
                 res.data.forEach(e => {
                         //name is the name of committer
-                        const name = e.commit.author.name;
+                        const name = e.commit.committer.name;
                         //check whether committer is in the arr object
                         if (name in arr) {
                             //if name exists in arr object increment its count of commits by 1
