@@ -17,6 +17,7 @@ Find the n most popular repositories of a given organization on Github based on 
         name:REPO_NAME
         <br/>
     }
+
 * This array object is sorted in descending order of count values and top n repositories are extracted.
 * The extracted top n repositories are then again processed and with each element extra key of committees is added. This is done by sending API requests to https://api.github.com/repos/{ORGANIZATION}/{REPO_NAME}/commits and counting the number of times each user has committed to that repo. 
 <br/>
@@ -35,6 +36,7 @@ The final format of each objects in Array becomes:
         }....]
         <br/>
 }
+
 * The array corresponding to commiitees is then sorted in descending order of number of comits by each commiter and top m committers are selected.
 * This final response is then sent as JSON response.
 
