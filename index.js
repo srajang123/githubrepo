@@ -4,8 +4,19 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+const error = (err, res) => {
+    const ret = {
+        status: 0,
+        message: err.message
+    }
+    res.send(ret);
+}
+
 const sendData = (res, data) => {
-    res.json(data);
+    res.json({
+        status: 1,
+        data: data
+    });
 }
 
 const finalData = async(res, org, data, n, m, sendData) => {
@@ -49,7 +60,7 @@ const getCommittees = (org, repo, m) => {
                 resolve(arr);
             })
             .catch(err => {
-                console.log('Error in code' + err);
+                error(err, rest);
                 reject(err);
             })
 
@@ -75,7 +86,7 @@ const send = (url, count, rest, max, org, n, m, sortFunc) => {
                 });
             })
             .catch(err => {
-                rest.send('Following error has occured: ' + err);
+                error(err, rest);
                 return;
             });
     }
@@ -92,7 +103,7 @@ const fetch = (rest, url, org, n, m, send) => {
             send(url, count, rest, myres.data.public_repos, org, n, m, sortFunc);
         })
         .catch(err => {
-            console.log('Error: ' + err);
+            error(err, rest);
         });
 }
 
