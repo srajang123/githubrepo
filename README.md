@@ -47,3 +47,27 @@ While receiving data from GitHub API, callback is called only when all data has 
 
 * <b>Using Promises</b>
 After receiving all commiter data from API data is returned to the calling function.
+
+## API Data Return Format
+* It returns data in JSON format.
+* The format is:
+<br/>
+<b>In case of error:</b>
+<br/>
+    {
+        <br/>
+        status: 0,
+        <br/>
+        message:ERROR_MESSAFE_CODE
+        <br/>
+    }
+<br/>
+<b>In case of no error:</b>
+    <br/>
+    {
+        <br/>
+        status: 1,
+        <br/>
+        data:FINAL_DATA
+        <br/>
+    }
