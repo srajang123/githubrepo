@@ -78,6 +78,11 @@ After receiving all commiter data from API data is returned to the calling funct
 * <b>axios - </b>To Send Requests to Github API
 
 ## How to Run locally
+### Requirements
+* git client installed on the system
+* Node.js version 12.13.1
+* API testing tool: Browser or Postman or ny other tool.
+### Steps
 * Create a new folder on your system.
 * Migrate to that folder in the terminal.
 * Run `git clone https://github.com/srajang123/githubrepo`. This will clone the repo to your system.
