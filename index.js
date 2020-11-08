@@ -21,6 +21,49 @@ const sendData = (res, data) => {
         data: data //Contains the response according to the request
     });
 };
+//Function to get data from API recursively
+const getCommitteesList = async(org, repo, page) => {
+    //Returning promise to ensure next step is taken after receiving data
+    return new Promise(async(resolve, reject) => {
+        //Calling getCommittees which sends result for a particular page
+        await getCommittees(org, repo, page)
+            //Receiving result in result variable
+            .then(async(result) => {
+                //Checking whether response received or not
+                if (Object.keys(result).length > 0) {
+                    //Recusively calling getCommitteesList with incrementing page number
+                    await getCommitteesList(org, repo, page + 1)
+                        //Receving result in temporary variable and then combining it with result variable
+                        .then(tempResult => {
+                            //Iterating over all keys of temporary result variable
+                            Object.keys(tempResult).forEach(key => {
+                                    //If key exists in result then add its value to existing value
+                                    if (key in result)
+                                        result[key] += tempResult[key];
+                                    //If key does not exist in temporary variable then add new ley value pair to result object
+                                    else
+                                        result[key] = tempResult[key];
+                                })
+                                //Return the result object after completing the processing
+                            resolve(result);
+                        });
+                    //return result.concat(getCommitteesList(org, repo, page + 1));
+                }
+                //If no response received then it is base condition for recursion and return empty object
+                else
+                //Returns empty object
+                    resolve({});
+            })
+            .catch(err => {
+                //If error occurs Send error data to error function
+                console.log('Fuck' + err);
+                //Rejecting from promise
+                reject(err);
+            })
+    });
+}
+
+
 
 //Function to get Final Data which is to be returned to client
 const finalData = async(res, org, data, n, m, sendData) => {
@@ -30,11 +73,18 @@ const finalData = async(res, org, data, n, m, sendData) => {
     for (let ii = 0; ii < n; ii++) {
         //Incrementing count for each processed element
         i++;
-        //Assigning committees to each element by calling getCommittees and picking up max m elements from that array by using sort and slicing.
-        data[ii]["committees"] = Object.entries(await getCommittees(org, data[ii].name)).sort((a, b) => {
-            //Sorting in decreasing order
-            return b[1] - a[1];
-        }).slice(0, m); //Slicing
+        //Assigning committees to each element by calling getCommitteesList and picking up max m elements from that array by using sort and slicing.
+        await getCommitteesList(org, data[ii].name, 1).then(results => {
+                data[ii]["committees"] = Object.entries(results).sort((a, b) => {
+                    //Sorting in decreasing order
+                    return b[1] - a[1];
+                }).slice(0, m); //Slicing
+            })
+            .catch(err => {
+                //If error occurs Send error data to error function
+                console.log('New Error:' + err);
+            })
+
         //When all elements are process callback to sendData function
         if (i == n)
             sendData(res, data);
@@ -51,13 +101,13 @@ const sortFunc = (org, data, res, n, m, finalData) => {
     finalData(res, org, data.slice(0, n), n, m, sendData);
 };
 //Function to get committees corresponding to given repository
-const getCommittees = (org, repo) => {
+const getCommittees = (org, repo, page) => {
     //Returning a Promise
     return new Promise((resolve, reject) => {
         //JavaScript Object to store committer name and number of commits of that committer as key value pair.
         let arr = {};
         //Sending a get request to https://api.github.com/repos for getting commits
-        axios.get('https://api.github.com/repos/' + org + '/' + repo + '/commits', {
+        axios.get('https://api.github.com/repos/' + org + '/' + repo + '/commits?per_page=100&page=' + page, {
                 //Sending headers for authorization so as to send 5000 requests per hour to GITHUB API.
                 headers: {
                     //Authorization key and Tokenkey as value
@@ -83,7 +133,7 @@ const getCommittees = (org, repo) => {
             })
             .catch(err => {
                 //If error occurs Send error data to error function
-                error(err, rest);
+                console.log(err);
                 //Throw error using promise with help of reject
                 reject(err);
             })
@@ -126,7 +176,7 @@ const send = (url, count, rest, max, org, n, m, sortFunc) => {
 };
 //Fetch function to evaluate how many times times request should be sent to Github API
 const fetch = (rest, url, org, n, m, send) => {
-    //send a get request to thr given url
+    //send a get request to the given url
     axios.get(url, {
             //Sending headers for authorization so as to send 5000 requests per hour to GITHUB API.
             headers: {
