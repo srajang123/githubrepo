@@ -22,17 +22,17 @@ const sendData = (res, data) => {
     });
 };
 //Function to get data from API recursively
-const getCommitteesList = async(org, repo, page) => {
+const getCommitteesList = async(org, repo, page, resp) => {
     //Returning promise to ensure next step is taken after receiving data
     return new Promise(async(resolve, reject) => {
         //Calling getCommittees which sends result for a particular page
-        await getCommittees(org, repo, page)
+        await getCommittees(org, repo, page, resp)
             //Receiving result in result variable
             .then(async(result) => {
                 //Checking whether response received or not
                 if (Object.keys(result).length > 0) {
                     //Recusively calling getCommitteesList with incrementing page number
-                    await getCommitteesList(org, repo, page + 1)
+                    await getCommitteesList(org, repo, page + 1, resp)
                         //Receving result in temporary variable and then combining it with result variable
                         .then(tempResult => {
                             //Iterating over all keys of temporary result variable
@@ -56,7 +56,7 @@ const getCommitteesList = async(org, repo, page) => {
             })
             .catch(err => {
                 //If error occurs Send error data to error function
-                console.log('Fuck' + err);
+                error(err, resp);
                 //Rejecting from promise
                 reject(err);
             })
@@ -74,7 +74,7 @@ const finalData = async(res, org, data, n, m, sendData) => {
         //Incrementing count for each processed element
         i++;
         //Assigning committees to each element by calling getCommitteesList and picking up max m elements from that array by using sort and slicing.
-        await getCommitteesList(org, data[ii].name, 1).then(results => {
+        await getCommitteesList(org, data[ii].name, 1, res).then(results => {
                 data[ii]["committees"] = Object.entries(results).sort((a, b) => {
                     //Sorting in decreasing order
                     return b[1] - a[1];
@@ -82,7 +82,7 @@ const finalData = async(res, org, data, n, m, sendData) => {
             })
             .catch(err => {
                 //If error occurs Send error data to error function
-                console.log('New Error:' + err);
+                error(err, res);
             })
 
         //When all elements are process callback to sendData function
@@ -101,7 +101,7 @@ const sortFunc = (org, data, res, n, m, finalData) => {
     finalData(res, org, data.slice(0, n), n, m, sendData);
 };
 //Function to get committees corresponding to given repository
-const getCommittees = (org, repo, page) => {
+const getCommittees = (org, repo, page, resp) => {
     //Returning a Promise
     return new Promise((resolve, reject) => {
         //JavaScript Object to store committer name and number of commits of that committer as key value pair.
@@ -133,7 +133,7 @@ const getCommittees = (org, repo, page) => {
             })
             .catch(err => {
                 //If error occurs Send error data to error function
-                console.log(err);
+                error(err, resp);
                 //Throw error using promise with help of reject
                 reject(err);
             })
