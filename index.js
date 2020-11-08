@@ -5,12 +5,17 @@ const app = express(); //creating instance of server
 
 //Utility Function For Handling errors. All Errors in the code are passed to this function.
 const error = (err, res) => {
-    //storing data to be returned in a temporary variable
-    const ret = {
-        status: 0, //Status code 0 means an error has occurred
-        message: err.message //Contains the message body of the Error
+    try {
+        //storing data to be returned in a temporary variable
+        const ret = {
+            status: 0, //Status code 0 means an error has occurred
+            message: err.message //Contains the message body of the Error
+        }
+        console.log(ret);
+        res.json(ret); //Send response back to client.
+    } catch (except) {
+        console.log('Headers sent')
     }
-    res.json(ret); //Send response back to client.
 };
 
 //Function to return data to client
