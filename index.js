@@ -3,6 +3,8 @@ const express = require('express'); //import express for managing server
 const axios = require('axios'); //import axios to send get requests
 const app = express(); //creating instance of server
 
+const PORT = process.env.PORT || 5000;
+
 //Utility Function For Handling errors. All Errors in the code are passed to this function.
 const error = (err, res) => {
     //storing data to be returned in a temporary variable
@@ -216,4 +218,4 @@ app.use((req, res) => {
     res.status(404).json(ret);
 });
 //Creates and listens to the server
-app.listen(5000, console.log('Server Running on PORT 5000'));
+app.listen(PORT, console.log(`Server Running on PORT ${PORT}`));
