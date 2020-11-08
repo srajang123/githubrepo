@@ -23,26 +23,30 @@ const sendData = (res, data) => {
 };
 
 const getCommitteesList = async(org, repo, page) => {
-    console.log(page);
-    await getCommittees(org, repo, page)
-        .then(async(result) => {
-            if (Object.keys(result).length > 0) {
-                let tempResult = await getCommitteesList(org, repo, page + 1);
-                /*Object.keys(tempResult).forEach(key => {
-                    if (key in result)
-                        result[key] += tempResult[key];
-                    else
-                        result[key] = tempResult[key];
-                });
-                console.log(result);*/
-                return result;
-                //return result.concat(getCommitteesList(org, repo, page + 1));
-            } else
-                return {};
-        })
-        .catch(err => {
-            console.log('Fuck' + err);
-        })
+    //console.log(page);
+    return new Promise(async(resolve, reject) => {
+        await getCommittees(org, repo, page)
+            .then(async(result) => {
+                if (Object.keys(result).length > 0) {
+                    await getCommitteesList(org, repo, page + 1)
+                        .then(tempResult => {
+                            Object.keys(tempResult).forEach(key => {
+                                if (key in result)
+                                    result[key] += tempResult[key];
+                                else
+                                    result[key] = tempResult[key];
+                            })
+                            resolve(result);
+                        });
+                    //return result.concat(getCommitteesList(org, repo, page + 1));
+                } else
+                    resolve({});
+            })
+            .catch(err => {
+                console.log('Fuck' + err);
+                reject(err);
+            })
+    });
 }
 
 
@@ -57,10 +61,21 @@ const finalData = async(res, org, data, n, m, sendData) => {
         i++;
         //Assigning committees to each element by calling getCommittees and picking up max m elements from that array by using sort and slicing.
         //await getCommitteesList(org, data[ii].name, 1);
-        data[ii]["committees"] = Object.entries(await getCommitteesList(org, data[ii].name, 1)).sort((a, b) => {
+        /*data[ii]["committees"] = Object.entries(await getCommitteesList(org, data[ii].name, 1)).sort((a, b) => {
             //Sorting in decreasing order
             return b[1] - a[1];
-        }).slice(0, m); //Slicing
+        }).slice(0, m); //Slicing*/
+        await getCommitteesList(org, data[ii].name, 1).then(results => {
+                console.log('*' + ii + ":" + data[ii].name);
+                data[ii]["committees"] = Object.entries(results).sort((a, b) => {
+                    //Sorting in decreasing order
+                    return b[1] - a[1];
+                }).slice(0, m); //Slicing
+            })
+            .catch(err => {
+                console.log('New Error:' + err);
+            })
+
         //When all elements are process callback to sendData function
         if (i == n)
             sendData(res, data);
@@ -109,7 +124,7 @@ const getCommittees = (org, repo, page) => {
             })
             .catch(err => {
                 //If error occurs Send error data to error function
-                error(err, rest);
+                console.log(err);
                 //Throw error using promise with help of reject
                 reject(err);
             })
@@ -152,7 +167,7 @@ const send = (url, count, rest, max, org, n, m, sortFunc) => {
 };
 //Fetch function to evaluate how many times times request should be sent to Github API
 const fetch = (rest, url, org, n, m, send) => {
-    //send a get request to thr given url
+    //send a get request to the given url
     axios.get(url, {
             //Sending headers for authorization so as to send 5000 requests per hour to GITHUB API.
             headers: {
