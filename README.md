@@ -2,10 +2,10 @@
 ## TASK
 Find the n most popular repositories of a given organization on Github based on the number of forks. For each such repo find the top m committees and their commit counts. 
 ## API
-* The API is hosted at https://almabaseinterntask.herokuapp.com/.
-* To access the API send request to https://almabaseinterntask.herokuapp.com/api?org=ORGANIZATION_NAME&n=VALUE_OF_N&m=VALUE_OF_M
-* API access example: https://almabaseinterntask.herokuapp.com/api?org=google&n=1&m=3
-<b>NOTE: The API is hosted on heroku. It blocks the request when request processing takes more than 30s.</b>
+* The API is hosted at http://ec2-34-204-95-139.compute-1.amazonaws.com:5000/.
+* To access the API send request to http://ec2-34-204-95-139.compute-1.amazonaws.com:5000/api?org=ORGANIZATION_NAME&n=VALUE_OF_N&m=VALUE_OF_M
+* API access example: http://ec2-34-204-95-139.compute-1.amazonaws.com:5000/api?org=google&n=1&m=3
+<br>
 ## API working
 * API receives a request in the form: /api?org={ORGNAIZATION NAME}&n={VALUE OF n}&m={VALUE OF m}
 * Then the API sends a request to https://api.github.com/orgs/{ORGANIZATION}
