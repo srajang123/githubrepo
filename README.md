@@ -5,8 +5,8 @@ Find the n most popular repositories of a given organization on Github based on 
 * The API is hosted at http://ec2-34-204-95-139.compute-1.amazonaws.com:5000/.
 * To access the API send request to http://ec2-34-204-95-139.compute-1.amazonaws.com:5000/api?org=ORGANIZATION_NAME&n=VALUE_OF_N&m=VALUE_OF_M
 * API access example: http://ec2-34-204-95-139.compute-1.amazonaws.com:5000/api?org=google&n=1&m=3
-<br>
-## API working
+
+##  API working
 * API receives a request in the form: /api?org={ORGNAIZATION NAME}&n={VALUE OF n}&m={VALUE OF m}
 * Then the API sends a request to https://api.github.com/orgs/{ORGANIZATION}
 * From the response received, it extracts the total number of repositories present in that organization.
